@@ -92,7 +92,7 @@ const removeHtmlAndShorten = (body) => {
   const filtered = sanitizeHtml(body, {
     allowedTags: [],
   });
-  return filtered.length < 200 ? filtered : `${filtered.slice(0, 200)}...`;
+  return filtered.length < 200 ? filtered : `${filtered.slice(0, 110)}...`;
 };
 
 // GET 데이터 리스트 조회
