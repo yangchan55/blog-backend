@@ -35,6 +35,7 @@ app.use(router.routes()).use(router.allowedMethods());
 
 const buildDirectory = path.resolve(__dirname, '../../blog-frontend/build');
 app.use(serve(buildDirectory));
+app.use(serve(path.resolve(__dirname, '../public/uploads')));
 // Not Found이고 주소가 /api로 시작하지 않는경우
 app.use(async (ctx) => {
   if (ctx.status === 404 && ctx.path.indexOf('/api') !== 0) {

@@ -90,7 +90,10 @@ export const write = async (ctx) => {
 
 const removeHtmlAndShorten = (body) => {
   const filtered = sanitizeHtml(body, {
-    allowedTags: [],
+    allowedTags: ['img'],
+    allowedAttributes: {
+      img: ['src'],
+    },
   });
   return filtered.length < 200 ? filtered : `${filtered.slice(0, 110)}...`;
 };
@@ -177,6 +180,16 @@ export const update = async (ctx) => {
       return;
     }
     ctx.body = post;
+  } catch (e) {
+    ctx.throw(500, e);
+  }
+};
+
+export const upload = async (ctx) => {
+  try {
+    ctx.body = {
+      filename: ctx.request.file.filename,
+    };
   } catch (e) {
     ctx.throw(500, e);
   }
