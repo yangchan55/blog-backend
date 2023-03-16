@@ -3,7 +3,6 @@ import * as postsCtrl from './posts.ctrl';
 import checkLoggedIn from '../../lib/checkLoggedIn';
 import multer from '@koa/multer';
 import path from 'path';
-import serve from 'koa-static';
 
 const posts = new Router();
 const upload = multer({

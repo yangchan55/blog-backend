@@ -2,6 +2,8 @@ import Post from '../../models/post';
 import mongoose from 'mongoose';
 import Joi from 'joi';
 import sanitizeHtml from 'sanitize-html';
+import sharp from 'sharp';
+import fs from 'fs';
 
 const { ObjectId } = mongoose.Types;
 
@@ -185,8 +187,18 @@ export const update = async (ctx) => {
   }
 };
 
+// 파일 업로드
 export const upload = async (ctx) => {
   try {
+    sharp(ctx.request.file.path)
+      .resize({ width: 600 })
+      .withMetadata()
+      .toBuffer((err, buffer) => {
+        if (err) throw err;
+        fs.writeFile(ctx.request.file.path, buffer, (err) => {
+          if (err) throw err;
+        });
+      });
     ctx.body = {
       filename: ctx.request.file.filename,
     };
