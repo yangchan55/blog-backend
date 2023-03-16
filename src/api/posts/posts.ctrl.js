@@ -80,6 +80,7 @@ export const write = async (ctx) => {
     title,
     body: sanitizeHtml(body, sanitizeOption),
     tags,
+    count: 0,
     user: ctx.state.user,
   });
   try {
@@ -135,8 +136,25 @@ export const list = async (ctx) => {
 };
 
 // GET 특정 데이터 조회
-export const read = (ctx) => {
-  ctx.body = ctx.state.post;
+export const read = async (ctx) => {
+  const nextData = ctx.state.post;
+
+  if (nextData.count === undefined) {
+    nextData.count = 0;
+  }
+
+  if (nextData.count >= 0) {
+    nextData.count = nextData.count + 1;
+  }
+
+  try {
+    const post = await Post.findByIdAndUpdate(nextData._id, nextData, {
+      new: true,
+    }).exec();
+    ctx.body = post;
+  } catch (e) {
+    ctx.throw(500, e);
+  }
 };
 
 // DELETE 특정 데이터 삭제
