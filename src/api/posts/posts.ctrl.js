@@ -22,11 +22,15 @@ const sanitizeOption = {
     'blockquote',
     'a',
     'img',
+    'pre',
+    'span',
   ],
   allowedAttributes: {
     a: ['href', 'name', 'target'],
     img: ['src'],
     li: ['class'],
+    pre: ['class', 'spellcheck'],
+    span: ['class'],
   },
   allowedSchemes: ['data', 'http'],
 };
@@ -76,9 +80,11 @@ export const write = async (ctx) => {
   }
 
   const { title, body, tags } = ctx.request.body;
+
   const post = new Post({
     title,
     body: sanitizeHtml(body, sanitizeOption),
+    image: parseImageToBody(body),
     tags,
     count: 0,
     user: ctx.state.user,
@@ -93,12 +99,27 @@ export const write = async (ctx) => {
 
 const removeHtmlAndShorten = (body) => {
   const filtered = sanitizeHtml(body, {
-    allowedTags: ['img'],
-    allowedAttributes: {
-      img: ['src'],
-    },
+    allowedTags: ['p'],
   });
-  return filtered.length < 200 ? filtered : `${filtered.slice(0, 110)}...`;
+  return filtered.length < 100 ? filtered : `${filtered.slice(0, 100)}...`;
+};
+
+const parseImageToBody = (body) => {
+  const imgArr = ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'];
+  const imgSrc =
+    'http://localhost:4000/' +
+    imgArr[Math.floor(Math.random() * imgArr.length)];
+
+  let image = '<img src="' + imgSrc + '"/>';
+
+  const imgReg = /<img[^>]*src=[^>]*>/g;
+  const isImage = imgReg.exec(body);
+
+  if (isImage !== null) {
+    image = isImage[0];
+  }
+
+  return image;
 };
 
 // GET 데이터 리스트 조회
@@ -118,13 +139,13 @@ export const list = async (ctx) => {
   try {
     const posts = await Post.find(query)
       .sort({ _id: -1 })
-      .limit(10)
-      .skip((page - 1) * 10)
+      .limit(20)
+      .skip((page - 1) * 20)
       .lean()
       .exec();
     // 토탈 페이지 카운트를 헤더에 보낸다.
     const postCount = await Post.countDocuments(query).exec();
-    ctx.set('Last-Page', Math.ceil(postCount / 10));
+    ctx.set('Last-Page', Math.ceil(postCount / 20));
     // body의 길이가 200자 이상일 경우 ...처리
     ctx.body = posts.map((post) => ({
       ...post,
@@ -186,6 +207,7 @@ export const update = async (ctx) => {
   }
 
   const nextData = { ...ctx.request.body };
+  nextData.image = parseImageToBody(nextData.body);
 
   if (nextData.body) {
     nextData.body = sanitizeHtml(nextData.body, sanitizeOption);

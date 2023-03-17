@@ -6,6 +6,7 @@ const PostSchema = new Schema({
   title: String,
   body: String,
   count: Number,
+  image: String,
   tags: [String],
   publishedDate: {
     type: Date,
